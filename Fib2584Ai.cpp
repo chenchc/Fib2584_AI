@@ -36,32 +36,58 @@ void Fib2584Ai::Greedy::initialize()
 
 MoveDirection Fib2584Ai::Greedy::operator()(int board[4][4])
 {
-	buildTileQueue(board);
 	buildInvBoard(board);
+	buildTileQueue();
+
+	bool firstRowStuck = true;
+	{
+		for (int i = 0; i < 4; i++) {
+			if (invBoard[0][i] == 0)
+				firstRowStuck = false;
+			if (canMoveLeft(0, i))
+				firstRowStuck = false;
+		}
+	}
+	bool firstColStuck = true;
+	{
+		for (int i = 0; i < 4; i++) {
+			if (invBoard[i][0] == 0)
+				firstColStuck = false;
+			if (canMoveUp(i, 0))
+				firstColStuck = false;
+		}
+	}
+
+	MoveDirection thirdDir;
+
+	if (firstRowStuck && allCanMoveRight())
+		thirdDir = MOVE_RIGHT;
+	else if (firstColStuck && allCanMoveDown())
+		thirdDir = MOVE_DOWN;
+	else
+		thirdDir = allCanMoveRight() ? MOVE_RIGHT : MOVE_DOWN;
 
 	for (;;) {
 		if (tileQueue.size() == 0) {
-			return static_cast<MoveDirection>(
-				allCanMoveRight() ? MOVE_RIGHT : MOVE_DOWN);
+			return thirdDir;
 		}
 		Cor largest = tileQueue.back();
 		tileQueue.pop_back();
 		if (largest.num == 0) {
-			return static_cast<MoveDirection>(
-				allCanMoveRight() ? MOVE_RIGHT : MOVE_DOWN);
+			return thirdDir;
 		}
-			if (canMoveUp(largest.row, largest.col)) {
-				//std::cout << largest.row << " " << largest.col << " up" << std::endl;
-				return MOVE_UP;
-			}
-			if (canMoveLeft(largest.row, largest.col)) {
-				//std::cout << largest.row << " " << largest.col << " left" << std::endl;
-				return MOVE_LEFT;
-			}
+		if (canMoveUp(largest.row, largest.col)) {
+			//std::cout << largest.row << " " << largest.col << " up" << std::endl;
+			return MOVE_UP;
+		}
+		if (canMoveLeft(largest.row, largest.col)) {
+			//std::cout << largest.row << " " << largest.col << " left" << std::endl;
+			return MOVE_LEFT;
+		}
 	}	
 }
 
-void Fib2584Ai::Greedy::buildTileQueue(int board[4][4])
+void Fib2584Ai::Greedy::buildTileQueue()
 {
 	tileQueue.clear();
 	for (int i = 0; i < 4; i++) {
@@ -70,7 +96,7 @@ void Fib2584Ai::Greedy::buildTileQueue(int board[4][4])
 
 			cor.row = i;
 			cor.col = j;
-			cor.num = board[i][j];
+			cor.num = invBoard[i][j];
 			tileQueue.push_back(cor);
 		}
 	}
@@ -196,3 +222,42 @@ bool Fib2584Ai::Greedy::canMoveUp(int row, int col) const
 	return false;
 }
 
+bool Fib2584Ai::Greedy::canMoveDown(int row, int col) const
+{
+	int i;
+
+	// Look rightward
+	for (i = row + 1; i < 4; i++) {
+		if (invBoard[i][col] == 0)
+			continue;
+		if (invFibNeighbor(invBoard[row][col], invBoard[i][col]))
+			return true;
+		break;
+	}
+	if (i != row + 1)
+		return true;
+
+	// Look upward
+	for (i = row - 1; i >= 0; i--) {
+		if (invBoard[i][col] == 0)
+			continue;
+		if (invFibNeighbor(invBoard[row][col], invBoard[i][col]))
+			return true;
+		break;
+	}
+
+	return false;
+}
+
+bool Fib2584Ai::Greedy::allCanMoveDown() const
+{
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			if (invBoard[i][j] == 0)
+				continue;
+			if (canMoveDown(i, j))
+				return true;
+		}
+	}
+	return false;
+}

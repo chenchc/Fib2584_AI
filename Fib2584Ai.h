@@ -48,12 +48,14 @@ private:
 		int invBoard[4][4];
 		std::vector<Cor> tileQueue;
 
-		void buildTileQueue(int board[4][4]);
+		void buildTileQueue();
 		void buildInvBoard(int board[4][4]);
 		bool canMoveLeft(int row, int col) const;
 		bool canMoveRight(int row, int col) const;
 		bool allCanMoveRight() const;
 		bool canMoveUp(int row, int col) const;
+		bool canMoveDown(int row, int col) const;
+		bool allCanMoveDown() const;
 	};
 	
 	Greedy greedy;

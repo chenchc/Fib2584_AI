@@ -38,25 +38,26 @@ MoveDirection Fib2584Ai::Greedy::operator()(int board[4][4])
 {
 	buildTileQueue(board);
 	buildInvBoard(board);
+
 	for (;;) {
 		if (tileQueue.size() == 0) {
 			return static_cast<MoveDirection>(
-				rand() % 2 ? MOVE_RIGHT : MOVE_DOWN);
+				allCanMoveRight() ? MOVE_RIGHT : MOVE_DOWN);
 		}
 		Cor largest = tileQueue.back();
 		tileQueue.pop_back();
 		if (largest.num == 0) {
 			return static_cast<MoveDirection>(
-				rand() % 2 ? MOVE_RIGHT : MOVE_DOWN);
+				allCanMoveRight() ? MOVE_RIGHT : MOVE_DOWN);
 		}
-		if (canMoveLeft(largest.row, largest.col)) {
-			//std::cout << largest.row << " " << largest.col << " left" << std::endl;
-			return MOVE_LEFT;
-		}
-		if (canMoveUp(largest.row, largest.col)) {
-			//std::cout << largest.row << " " << largest.col << " up" << std::endl;
-			return MOVE_UP;
-		}
+			if (canMoveUp(largest.row, largest.col)) {
+				//std::cout << largest.row << " " << largest.col << " up" << std::endl;
+				return MOVE_UP;
+			}
+			if (canMoveLeft(largest.row, largest.col)) {
+				//std::cout << largest.row << " " << largest.col << " left" << std::endl;
+				return MOVE_LEFT;
+			}
 	}	
 }
 
@@ -113,7 +114,7 @@ bool Fib2584Ai::Greedy::canMoveLeft(int row, int col) const
 			return true;
 		break;
 	}
-	if (col != 0 && i == -1)
+	if (i != col - 1)
 		return true;
 
 	// Look rightward
@@ -125,6 +126,46 @@ bool Fib2584Ai::Greedy::canMoveLeft(int row, int col) const
 		break;
 	}
 
+	return false;
+}
+
+bool Fib2584Ai::Greedy::canMoveRight(int row, int col) const
+{
+	int i;
+
+	// Look rightward
+	for (i = col + 1; i < 4; i++) {
+		if (invBoard[row][i] == 0)
+			continue;
+		if (invFibNeighbor(invBoard[row][col], invBoard[row][i]))
+			return true;
+		break;
+	}
+	if (i != col + 1)
+		return true;
+
+	// Look leftward
+	for (i = col - 1; i >= 0; i--) {
+		if (invBoard[row][i] == 0)
+			continue;
+		if (invFibNeighbor(invBoard[row][col], invBoard[row][i]))
+			return true;
+		break;
+	}
+
+	return false;
+}
+
+bool Fib2584Ai::Greedy::allCanMoveRight() const
+{
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			if (invBoard[i][j] == 0)
+				continue;
+			if (canMoveRight(i, j))
+				return true;
+		}
+	}
 	return false;
 }
 
@@ -140,7 +181,7 @@ bool Fib2584Ai::Greedy::canMoveUp(int row, int col) const
 			return true;
 		break;
 	}
-	if (row != 0 && i == -1)
+	if (i != row - 1)
 		return true;
 
 	// Look rightward

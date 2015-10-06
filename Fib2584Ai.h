@@ -35,11 +35,6 @@ private:
 			}
 		};
 
-		const int positionWeight[4][4] = 
-			{{4, 3, 2, 1},
-			 {3, 0, 0, 0},
-			 {2, 0, 0, 0},
-			 {1, 0, 0, 0}};
 		const int fibonacci[32]	= {0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 
 			233, 377, 610, 987, 1597, 2584, 4181, 6765, 10946, 17711, 28657, 
 			46368, 75025, 121393, 196418, 317811, 514229, 832040, 1346269, 
@@ -50,6 +45,8 @@ private:
 
 		void buildTileQueue();
 		void buildInvBoard(int board[4][4]);
+		bool canMergeLeft(int row, int col) const;
+		bool canMergeUp(int row, int col) const;
 		bool canMoveLeft(int row, int col) const;
 		bool canMoveRight(int row, int col) const;
 		bool allCanMoveRight() const;

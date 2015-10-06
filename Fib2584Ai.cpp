@@ -76,12 +76,16 @@ MoveDirection Fib2584Ai::Greedy::operator()(int board[4][4])
 		if (largest.num == 0) {
 			return thirdDir;
 		}
+		if (canMergeUp(largest.row, largest.col)) {
+			return MOVE_UP;
+		}
+		if (canMergeLeft(largest.row, largest.col)) {
+			return MOVE_LEFT;
+		}
 		if (canMoveUp(largest.row, largest.col)) {
-			//std::cout << largest.row << " " << largest.col << " up" << std::endl;
 			return MOVE_UP;
 		}
 		if (canMoveLeft(largest.row, largest.col)) {
-			//std::cout << largest.row << " " << largest.col << " left" << std::endl;
 			return MOVE_LEFT;
 		}
 	}	
@@ -148,6 +152,56 @@ bool Fib2584Ai::Greedy::canMoveLeft(int row, int col) const
 		if (invBoard[row][i] == 0)
 			continue;
 		if (invFibNeighbor(invBoard[row][col], invBoard[row][i]))
+			return true;
+		break;
+	}
+
+	return false;
+}
+
+bool Fib2584Ai::Greedy::canMergeLeft(int row, int col) const
+{
+	int i;
+
+	// Look leftward
+	for (i = col - 1; i >= 0; i--) {
+		if (invBoard[row][i] == 0)
+			continue;
+		if (invFibNeighbor(invBoard[row][col], invBoard[row][i]))
+			return true;
+		break;
+	}
+
+	// Look rightward
+	for (i = col + 1; i < 4; i++) {
+		if (invBoard[row][i] == 0)
+			continue;
+		if (invFibNeighbor(invBoard[row][col], invBoard[row][i]))
+			return true;
+		break;
+	}
+
+	return false;
+}
+
+bool Fib2584Ai::Greedy::canMergeUp(int row, int col) const
+{
+	int i;
+
+	// Look upward
+	for (i = row - 1; i >= 0; i--) {
+		if (invBoard[i][col] == 0)
+			continue;
+		if (invFibNeighbor(invBoard[row][col], invBoard[i][col]))
+			return true;
+		break;
+	}
+
+	// Look rightward
+	for (i = row + 1; i < 4; i++) {
+		if (invBoard[i][col] == 0)
+			continue;
+		if (invFibNeighbor(invBoard[row][col], invBoard[i][col]))
 			return true;
 		break;
 	}

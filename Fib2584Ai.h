@@ -47,9 +47,11 @@ private:
 		void buildInvBoard(int board[4][4]);
 		bool canMove(MoveDirection dir, int row, int col) const;
 		bool canMerge(MoveDirection dir, int row, int col) const;
+		bool canStrategicMove(MoveDirection dir, int row, int col) const;
 		bool allCanMove(MoveDirection dir) const;
 		bool isFirstRowStuck() const;
 		bool isFirstColStuck() const;
+		int countNonMergeableTile(MoveDirection dir, int row, int col) const;
 	};
 	
 	Greedy greedy;

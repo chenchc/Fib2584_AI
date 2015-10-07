@@ -61,6 +61,7 @@ MoveDirection Fib2584Ai::Greedy::operator()(int board[4][4])
 		if (largest.num == 0) {
 			return thirdDir;
 		}
+		// Merge first
 		if (canMerge(MOVE_UP, largest.row, largest.col)) {
 			return MOVE_UP;
 		}
@@ -68,6 +69,27 @@ MoveDirection Fib2584Ai::Greedy::operator()(int board[4][4])
 			return MOVE_LEFT;
 		}
 
+		// Try strategic move (if the node is big enough)
+		if (largest.num >= 5) {
+			// Normal stategic move
+			if (canStrategicMove(MOVE_UP, largest.row, largest.col))
+				return MOVE_UP;
+			if (canStrategicMove(MOVE_LEFT, largest.row, largest.col))
+				return MOVE_LEFT;
+
+			// Aggressive stategic move
+			if (firstRowStuck && canStrategicMove(MOVE_RIGHT, largest.row, 
+				largest.col))
+			{
+				//std::cout << "row: " << largest.row << "col: " << largest.col << std::endl;
+				return MOVE_RIGHT;
+			}
+			if (firstColStuck && canStrategicMove(MOVE_DOWN, largest.row, 
+				largest.col))
+				return MOVE_DOWN;
+		}
+
+		// Left it on edge or corner
 		if (canMove(MOVE_UP, largest.row, largest.col)) {
 			return MOVE_UP;
 		}
@@ -110,7 +132,9 @@ void Fib2584Ai::Greedy::buildInvBoard(int board[4][4])
 
 inline bool invFibNeighbor(int a, int b)
 {
-	if (a == 1 && b == 1)
+	if (a == 0 || b == 0)
+		return false;
+	else if (a == 1 && b == 1)
 		return true;
 	else if (a - b == 1)
 		return true;
@@ -234,6 +258,73 @@ bool Fib2584Ai::Greedy::canMerge(MoveDirection dir, int row, int col) const
 	return false;
 }
 
+bool Fib2584Ai::Greedy::canStrategicMove(MoveDirection dir, int row, int col) 
+	const
+{
+	int tileCount;	
+
+	switch (dir) {
+	case MOVE_UP:
+	case MOVE_DOWN:
+		// Count non-mergeable tile
+		tileCount = countNonMergeableTile(dir, row, col);
+		if (tileCount == -1)
+			return false;
+		// Look left col
+		if (col != 0) {
+			for (int i = 0; i < 4; i++) {
+				if (invFibNeighbor(invBoard[row][col], invBoard[i][col - 1]) &&
+					tileCount == countNonMergeableTile(dir, i, col - 1))
+				{
+					return true;
+				}
+			}
+		}
+		// Look right col
+		if (col != 3) {
+			for (int i = 0; i < 4; i++) {
+				if (invFibNeighbor(invBoard[row][col], invBoard[i][col + 1]) &&
+					tileCount == countNonMergeableTile(dir, i, col + 1))
+				{
+					return true;
+				}
+			}
+		}
+		break;
+	case MOVE_LEFT:
+	case MOVE_RIGHT:
+		// Count non-mergeable tile
+		tileCount = countNonMergeableTile(dir, row, col);
+		if (tileCount == -1)
+			return false;
+		// Look upper col
+		if (row != 0) {
+			for (int i = 0; i < 4; i++) {
+				if (invFibNeighbor(invBoard[row][col], invBoard[row - 1][i]) &&
+					tileCount == countNonMergeableTile(dir, row - 1, i))
+				{
+					return true;
+				}
+			}
+		}
+		// Look lower col
+		if (row != 3) {
+			for (int i = 0; i < 4; i++) {
+				if (invFibNeighbor(invBoard[row][col], invBoard[row + 1][i]) &&
+					tileCount == countNonMergeableTile(dir, row + 1, i))
+				{
+					return true;
+				}
+			}
+		}
+		break;
+	default:
+		assert(0);
+	}
+
+	return false;
+}
+
 bool Fib2584Ai::Greedy::allCanMove(MoveDirection dir) const
 {
 	for (int i = 0; i < 4; i++) {
@@ -273,4 +364,51 @@ bool Fib2584Ai::Greedy::isFirstColStuck() const
 		}
 	}
 	return firstColStuck;
+}
+
+int Fib2584Ai::Greedy::countNonMergeableTile(MoveDirection dir, int row, 
+	int col) const
+{
+	int tileCount = 0;
+
+	switch (dir) {
+	case MOVE_UP:
+		for (int i = row - 1; i >= 0; i--) {
+			if (invBoard[i][col] == 0)
+				continue;
+			if (canMerge(MOVE_UP, i, col))
+				return -1;
+			tileCount++;
+		}
+		break;
+	case MOVE_DOWN:
+		for (int i = row + 1; i < 4; i++) {
+			if (invBoard[i][col] == 0)
+				continue;
+			if (canMerge(MOVE_DOWN, i, col))
+				return -1;
+			tileCount++;
+		}
+		break;
+	case MOVE_LEFT:
+		for (int i = col - 1; i >= 0; i--) {
+			if (invBoard[row][i] == 0)
+				continue;
+			if (canMerge(MOVE_LEFT, row, i))
+				return -1;
+			tileCount++;
+		}
+		break;
+	case MOVE_RIGHT:
+		for (int i = col + 1; i < 4; i++) {
+			if (invBoard[row][i] == 0)
+				continue;
+			if (canMerge(MOVE_RIGHT, row, i))
+				return -1;
+			tileCount++;
+		}
+		break;
+	}
+
+	return tileCount;
 }

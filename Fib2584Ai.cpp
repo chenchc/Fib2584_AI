@@ -2,6 +2,7 @@
 #include <cstring>
 #include <algorithm>
 #include <iostream>
+#include <cassert>
 
 Fib2584Ai::Fib2584Ai()
 {
@@ -39,33 +40,17 @@ MoveDirection Fib2584Ai::Greedy::operator()(int board[4][4])
 	buildInvBoard(board);
 	buildTileQueue();
 
-	bool firstRowStuck = true;
-	{
-		for (int i = 0; i < 4; i++) {
-			if (invBoard[0][i] == 0)
-				firstRowStuck = false;
-			if (canMoveLeft(0, i))
-				firstRowStuck = false;
-		}
-	}
-	bool firstColStuck = true;
-	{
-		for (int i = 0; i < 4; i++) {
-			if (invBoard[i][0] == 0)
-				firstColStuck = false;
-			if (canMoveUp(i, 0))
-				firstColStuck = false;
-		}
-	}
+	bool firstRowStuck = isFirstRowStuck();
+	bool firstColStuck = isFirstColStuck();
 
 	MoveDirection thirdDir;
 
-	if (firstRowStuck && allCanMoveRight())
+	if (firstRowStuck && allCanMove(MOVE_RIGHT))
 		thirdDir = MOVE_RIGHT;
-	else if (firstColStuck && allCanMoveDown())
+	else if (firstColStuck && allCanMove(MOVE_DOWN))
 		thirdDir = MOVE_DOWN;
 	else
-		thirdDir = allCanMoveRight() ? MOVE_RIGHT : MOVE_DOWN;
+		thirdDir = allCanMove(MOVE_RIGHT) ? MOVE_RIGHT : MOVE_DOWN;
 
 	for (;;) {
 		if (tileQueue.size() == 0) {
@@ -76,16 +61,17 @@ MoveDirection Fib2584Ai::Greedy::operator()(int board[4][4])
 		if (largest.num == 0) {
 			return thirdDir;
 		}
-		if (canMergeUp(largest.row, largest.col)) {
+		if (canMerge(MOVE_UP, largest.row, largest.col)) {
 			return MOVE_UP;
 		}
-		if (canMergeLeft(largest.row, largest.col)) {
+		if (canMerge(MOVE_LEFT, largest.row, largest.col)) {
 			return MOVE_LEFT;
 		}
-		if (canMoveUp(largest.row, largest.col)) {
+
+		if (canMove(MOVE_UP, largest.row, largest.col)) {
 			return MOVE_UP;
 		}
-		if (canMoveLeft(largest.row, largest.col)) {
+		if (canMove(MOVE_LEFT, largest.row, largest.col)) {
 			return MOVE_LEFT;
 		}
 	}	
@@ -132,186 +118,159 @@ inline bool invFibNeighbor(int a, int b)
 		return b - a == 1;
 }
 
-bool Fib2584Ai::Greedy::canMoveLeft(int row, int col) const
+bool Fib2584Ai::Greedy::canMove(MoveDirection dir, int row, int col) const
 {
 	int i;
-
-	// Look leftward
-	for (i = col - 1; i >= 0; i--) {
-		if (invBoard[row][i] == 0)
-			continue;
-		if (invFibNeighbor(invBoard[row][col], invBoard[row][i]))
+	
+	switch (dir) {
+	case MOVE_LEFT:
+	case MOVE_RIGHT:
+		// Look leftward
+		for (i = col - 1; i >= 0; i--) {
+			if (invBoard[row][i] == 0)
+				continue;
+			if (invFibNeighbor(invBoard[row][col], invBoard[row][i]))
+				return true;
+			break;
+		}
+		if (dir == MOVE_LEFT && i != col - 1)
 			return true;
-		break;
-	}
-	if (i != col - 1)
-		return true;
 
-	// Look rightward
-	for (i = col + 1; i < 4; i++) {
-		if (invBoard[row][i] == 0)
-			continue;
-		if (invFibNeighbor(invBoard[row][col], invBoard[row][i]))
+		// Look rightward
+		for (i = col + 1; i < 4; i++) {
+			if (invBoard[row][i] == 0)
+				continue;
+			if (invFibNeighbor(invBoard[row][col], invBoard[row][i]))
+				return true;
+			break;
+		}
+		if (dir == MOVE_RIGHT && i != col + 1)
 			return true;
+
 		break;
+	case MOVE_UP:
+	case MOVE_DOWN:
+		// Look upward
+		for (i = row - 1; i >= 0; i--) {
+			if (invBoard[i][col] == 0)
+				continue;
+			if (invFibNeighbor(invBoard[row][col], invBoard[i][col]))
+				return true;
+			break;
+		}
+		if (dir == MOVE_UP && i != row - 1)
+			return true;
+
+		// Look downward
+		for (i = row + 1; i < 4; i++) {
+			if (invBoard[i][col] == 0)
+				continue;
+			if (invFibNeighbor(invBoard[row][col], invBoard[i][col]))
+				return true;
+			break;
+		}
+		if (dir == MOVE_DOWN && i != row + 1)
+			return true;
+		
+		break;
+	default:
+		assert(0);
 	}
 
 	return false;
 }
 
-bool Fib2584Ai::Greedy::canMergeLeft(int row, int col) const
+bool Fib2584Ai::Greedy::canMerge(MoveDirection dir, int row, int col) const
 {
 	int i;
+	
+	switch (dir) {
+	case MOVE_LEFT:
+	case MOVE_RIGHT:
+		// Look leftward
+		for (i = col - 1; i >= 0; i--) {
+			if (invBoard[row][i] == 0)
+				continue;
+			if (invFibNeighbor(invBoard[row][col], invBoard[row][i]))
+				return true;
+			break;
+		}
 
-	// Look leftward
-	for (i = col - 1; i >= 0; i--) {
-		if (invBoard[row][i] == 0)
-			continue;
-		if (invFibNeighbor(invBoard[row][col], invBoard[row][i]))
-			return true;
-		break;
-	}
+		// Look rightward
+		for (i = col + 1; i < 4; i++) {
+			if (invBoard[row][i] == 0)
+				continue;
+			if (invFibNeighbor(invBoard[row][col], invBoard[row][i]))
+				return true;
+			break;
+		}
 
-	// Look rightward
-	for (i = col + 1; i < 4; i++) {
-		if (invBoard[row][i] == 0)
-			continue;
-		if (invFibNeighbor(invBoard[row][col], invBoard[row][i]))
-			return true;
 		break;
+	case MOVE_UP:
+	case MOVE_DOWN:
+		// Look upward
+		for (i = row - 1; i >= 0; i--) {
+			if (invBoard[i][col] == 0)
+				continue;
+			if (invFibNeighbor(invBoard[row][col], invBoard[i][col]))
+				return true;
+			break;
+		}
+
+		// Look downward
+		for (i = row + 1; i < 4; i++) {
+			if (invBoard[i][col] == 0)
+				continue;
+			if (invFibNeighbor(invBoard[row][col], invBoard[i][col]))
+				return true;
+			break;
+		}
+		
+		break;
+	default:
+		assert(0);
 	}
 
 	return false;
 }
 
-bool Fib2584Ai::Greedy::canMergeUp(int row, int col) const
-{
-	int i;
-
-	// Look upward
-	for (i = row - 1; i >= 0; i--) {
-		if (invBoard[i][col] == 0)
-			continue;
-		if (invFibNeighbor(invBoard[row][col], invBoard[i][col]))
-			return true;
-		break;
-	}
-
-	// Look rightward
-	for (i = row + 1; i < 4; i++) {
-		if (invBoard[i][col] == 0)
-			continue;
-		if (invFibNeighbor(invBoard[row][col], invBoard[i][col]))
-			return true;
-		break;
-	}
-
-	return false;
-}
-
-bool Fib2584Ai::Greedy::canMoveRight(int row, int col) const
-{
-	int i;
-
-	// Look rightward
-	for (i = col + 1; i < 4; i++) {
-		if (invBoard[row][i] == 0)
-			continue;
-		if (invFibNeighbor(invBoard[row][col], invBoard[row][i]))
-			return true;
-		break;
-	}
-	if (i != col + 1)
-		return true;
-
-	// Look leftward
-	for (i = col - 1; i >= 0; i--) {
-		if (invBoard[row][i] == 0)
-			continue;
-		if (invFibNeighbor(invBoard[row][col], invBoard[row][i]))
-			return true;
-		break;
-	}
-
-	return false;
-}
-
-bool Fib2584Ai::Greedy::allCanMoveRight() const
+bool Fib2584Ai::Greedy::allCanMove(MoveDirection dir) const
 {
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
 			if (invBoard[i][j] == 0)
 				continue;
-			if (canMoveRight(i, j))
+			if (canMove(dir, i, j))
 				return true;
 		}
 	}
 	return false;
 }
 
-bool Fib2584Ai::Greedy::canMoveUp(int row, int col) const
+bool Fib2584Ai::Greedy::isFirstRowStuck() const
 {
-	int i;
-
-	// Look upward
-	for (i = row - 1; i >= 0; i--) {
-		if (invBoard[i][col] == 0)
-			continue;
-		if (invFibNeighbor(invBoard[row][col], invBoard[i][col]))
-			return true;
-		break;
-	}
-	if (i != row - 1)
-		return true;
-
-	// Look rightward
-	for (i = row + 1; i < 4; i++) {
-		if (invBoard[i][col] == 0)
-			continue;
-		if (invFibNeighbor(invBoard[row][col], invBoard[i][col]))
-			return true;
-		break;
-	}
-
-	return false;
-}
-
-bool Fib2584Ai::Greedy::canMoveDown(int row, int col) const
-{
-	int i;
-
-	// Look rightward
-	for (i = row + 1; i < 4; i++) {
-		if (invBoard[i][col] == 0)
-			continue;
-		if (invFibNeighbor(invBoard[row][col], invBoard[i][col]))
-			return true;
-		break;
-	}
-	if (i != row + 1)
-		return true;
-
-	// Look upward
-	for (i = row - 1; i >= 0; i--) {
-		if (invBoard[i][col] == 0)
-			continue;
-		if (invFibNeighbor(invBoard[row][col], invBoard[i][col]))
-			return true;
-		break;
-	}
-
-	return false;
-}
-
-bool Fib2584Ai::Greedy::allCanMoveDown() const
-{
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			if (invBoard[i][j] == 0)
-				continue;
-			if (canMoveDown(i, j))
-				return true;
+	bool firstRowStuck = true;
+	{
+		for (int i = 0; i < 4; i++) {
+			if (invBoard[0][i] == 0)
+				firstRowStuck = false;
+			if (canMove(MOVE_LEFT, 0, i))
+				firstRowStuck = false;
 		}
 	}
-	return false;
+	return firstRowStuck;
+}
+
+bool Fib2584Ai::Greedy::isFirstColStuck() const
+{
+	bool firstColStuck = true;
+	{
+		for (int i = 0; i < 4; i++) {
+			if (invBoard[i][0] == 0)
+				firstColStuck = false;
+			if (canMove(MOVE_UP, 0, i))
+				firstColStuck = false;
+		}
+	}
+	return firstColStuck;
 }

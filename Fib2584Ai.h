@@ -45,14 +45,11 @@ private:
 
 		void buildTileQueue();
 		void buildInvBoard(int board[4][4]);
-		bool canMergeLeft(int row, int col) const;
-		bool canMergeUp(int row, int col) const;
-		bool canMoveLeft(int row, int col) const;
-		bool canMoveRight(int row, int col) const;
-		bool allCanMoveRight() const;
-		bool canMoveUp(int row, int col) const;
-		bool canMoveDown(int row, int col) const;
-		bool allCanMoveDown() const;
+		bool canMove(MoveDirection dir, int row, int col) const;
+		bool canMerge(MoveDirection dir, int row, int col) const;
+		bool allCanMove(MoveDirection dir) const;
+		bool isFirstRowStuck() const;
+		bool isFirstColStuck() const;
 	};
 	
 	Greedy greedy;

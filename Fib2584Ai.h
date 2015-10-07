@@ -31,14 +31,24 @@ private:
 
 			bool operator<(const Cor &rhs) const
 			{
-				return num < rhs.num;
+				const int positionWeight[4][4] = {
+					{15, 14, 11, 7},
+					{13, 12, 9, 4},
+					{10, 8, 5, 2},
+					{6, 3, 1, 0}
+				};
+				if (num == rhs.num)
+					return positionWeight[row][col] <
+						positionWeight[rhs.row][rhs.col];
+				else
+					return num < rhs.num;
 			}
 		};
 
-		const int fibonacci[32]	= {0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 
-			233, 377, 610, 987, 1597, 2584, 4181, 6765, 10946, 17711, 28657, 
-			46368, 75025, 121393, 196418, 317811, 514229, 832040, 1346269, 
-			2178309};
+		const int fibonacci[32]	= {0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 
+			89, 144, 233, 377, 610, 987, 1597, 2584, 4181, 6765, 10946, 17711, 
+			28657, 46368, 75025, 121393, 196418, 317811, 514229, 832040, 
+			1346269, 2178309};
 
 		int invBoard[4][4];
 		std::vector<Cor> tileQueue;

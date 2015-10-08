@@ -31,8 +31,15 @@ void Fib2584Ai::gameOver(int board[4][4], int iScore)
 Fib2584Ai::Greedy::Greedy()
 {}
 
+const int Fib2584Ai::Greedy::positionWeight[4][4] = {
+	{15, 14, 11, 7},
+	{13, 12, 9, 4},
+	{10, 8, 5, 2},
+	{6, 3, 1, 0}
+};
 void Fib2584Ai::Greedy::initialize()
 {
+	recornerEnable = 0;
 }
 
 MoveDirection Fib2584Ai::Greedy::operator()(int board[4][4])
@@ -40,8 +47,10 @@ MoveDirection Fib2584Ai::Greedy::operator()(int board[4][4])
 	buildInvBoard(board);
 	buildTileQueue();
 
-	bool firstRowStuck = isFirstRowStuck();
-	bool firstColStuck = isFirstColStuck();
+	bool firstRowStuck = isRowStuck(0);
+	bool firstColStuck = isColStuck(0);
+	bool secondRowStuck = isRowStuck(1);
+	bool secondColStuck = isColStuck(1);
 
 	MoveDirection thirdDir;
 
@@ -51,6 +60,13 @@ MoveDirection Fib2584Ai::Greedy::operator()(int board[4][4])
 		thirdDir = MOVE_DOWN;
 	else
 		thirdDir = allCanMove(MOVE_RIGHT) ? MOVE_RIGHT : MOVE_DOWN;
+	/*
+	if (recornerEnable) {
+		recornerEnable = false;
+		if (allCanMove(recornerSecond))
+			return recornerSecond;
+	}
+	*/
 
 	for (;;) {
 		if (tileQueue.size() == 0) {
@@ -61,6 +77,15 @@ MoveDirection Fib2584Ai::Greedy::operator()(int board[4][4])
 		if (largest.num == 0) {
 			return thirdDir;
 		}
+
+		/*	
+		if (tileQueue.size() == 15 && largest.num >= 4 && largest.num <= 5) {
+			if (recornerTest(largest.row, largest.col)) {
+				return recornerFirst;
+			}
+		}
+		*/
+
 		// Merge first
 		if (canMerge(MOVE_UP, largest.row, largest.col)) {
 			return MOVE_UP;
@@ -69,23 +94,29 @@ MoveDirection Fib2584Ai::Greedy::operator()(int board[4][4])
 			return MOVE_LEFT;
 		}
 
-		// Try strategic move (if the node is big enough)
-		if (largest.num >= 5) {
-			// Normal stategic move
+		// Normal stategic move
+		if (largest.num >= 5 || 
+			firstColStuck && secondColStuck && largest.num >= 3) {
 			if (canStrategicMove(MOVE_UP, largest.row, largest.col))
 				return MOVE_UP;
+		}
+		if (largest.num >= 5 || 
+			firstRowStuck && secondRowStuck && largest.num >= 3) {
 			if (canStrategicMove(MOVE_LEFT, largest.row, largest.col))
 				return MOVE_LEFT;
+		}
 
-			// Aggressive stategic move
-			if (firstRowStuck && canStrategicMove(MOVE_RIGHT, largest.row, 
-				largest.col))
-			{
-				//std::cout << "row: " << largest.row << "col: " << largest.col << std::endl;
+		// Aggressive stategic move
+		if (firstRowStuck && (largest.num >= 5 || 
+			secondRowStuck && largest.num >= 3)) 
+		{
+			if (canStrategicMove(MOVE_RIGHT, largest.row, largest.col))
 				return MOVE_RIGHT;
-			}
-			if (firstColStuck && canStrategicMove(MOVE_DOWN, largest.row, 
-				largest.col))
+		}
+		if (firstColStuck && (largest.num >= 5 || 
+			secondColStuck && largest.num >= 3)) 
+		{
+			if (canStrategicMove(MOVE_DOWN, largest.row, largest.col))
 				return MOVE_DOWN;
 		}
 
@@ -325,6 +356,43 @@ bool Fib2584Ai::Greedy::canStrategicMove(MoveDirection dir, int row, int col)
 	return false;
 }
 
+bool Fib2584Ai::Greedy::recornerTest(int row, int col) 
+{
+	if (row == 0 && col == 1 && invBoard[0][0] != 0) {
+		// Count col 1 non-mergeable tile count
+		int tileCount1 = countNonMergeableTile(MOVE_DOWN, 0, 1);
+		int tileCount0 = 0;
+
+		for (int i = 0; i < 4; i++) {
+			if (invBoard[i][0] != 0)
+				tileCount0++;
+		}
+		if (tileCount1 >= tileCount0) {
+			recornerEnable = true;
+			recornerFirst = MOVE_DOWN;
+			recornerSecond = MOVE_LEFT;
+			return true;
+		}
+	}
+	else if (row == 1 && col == 0 && invBoard[0][0] != 0) {
+		// Count col 1 non-mergeable tile count
+		int tileCount1 = countNonMergeableTile(MOVE_RIGHT, 0, 1);
+		int tileCount0 = 0;
+
+		for (int i = 0; i < 4; i++) {
+			if (invBoard[0][i] != 0)
+				tileCount0++;
+		}
+		if (tileCount1 >= tileCount0) {
+			recornerEnable = true;
+			recornerFirst = MOVE_RIGHT;
+			recornerSecond = MOVE_UP;
+			return true;
+		}
+	}
+	return false;
+}
+
 bool Fib2584Ai::Greedy::allCanMove(MoveDirection dir) const
 {
 	for (int i = 0; i < 4; i++) {
@@ -338,28 +406,28 @@ bool Fib2584Ai::Greedy::allCanMove(MoveDirection dir) const
 	return false;
 }
 
-bool Fib2584Ai::Greedy::isFirstRowStuck() const
+bool Fib2584Ai::Greedy::isRowStuck(int row) const
 {
 	bool firstRowStuck = true;
 	{
 		for (int i = 0; i < 4; i++) {
-			if (invBoard[0][i] == 0)
+			if (invBoard[row][i] == 0)
 				firstRowStuck = false;
-			if (canMove(MOVE_LEFT, 0, i))
+			if (canMove(MOVE_LEFT, row, i))
 				firstRowStuck = false;
 		}
 	}
 	return firstRowStuck;
 }
 
-bool Fib2584Ai::Greedy::isFirstColStuck() const
+bool Fib2584Ai::Greedy::isColStuck(int col) const
 {
 	bool firstColStuck = true;
 	{
 		for (int i = 0; i < 4; i++) {
-			if (invBoard[i][0] == 0)
+			if (invBoard[i][col] == 0)
 				firstColStuck = false;
-			if (canMove(MOVE_UP, 0, i))
+			if (canMove(MOVE_UP, i, col))
 				firstColStuck = false;
 		}
 	}

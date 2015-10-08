@@ -25,18 +25,14 @@ private:
 		void initialize();
 		MoveDirection operator()(int board[4][4]);
 	private:
+		static const int positionWeight[4][4];
+
 		struct Cor {
 			int row, col;
 			int num;
 
 			bool operator<(const Cor &rhs) const
 			{
-				const int positionWeight[4][4] = {
-					{15, 14, 11, 7},
-					{13, 12, 9, 4},
-					{10, 8, 5, 2},
-					{6, 3, 1, 0}
-				};
 				if (num == rhs.num)
 					return positionWeight[row][col] <
 						positionWeight[rhs.row][rhs.col];
@@ -52,19 +48,23 @@ private:
 
 		int invBoard[4][4];
 		std::vector<Cor> tileQueue;
+		bool recornerEnable;
+		MoveDirection recornerFirst, recornerSecond;
 
 		void buildTileQueue();
 		void buildInvBoard(int board[4][4]);
 		bool canMove(MoveDirection dir, int row, int col) const;
 		bool canMerge(MoveDirection dir, int row, int col) const;
 		bool canStrategicMove(MoveDirection dir, int row, int col) const;
+		bool recornerTest(int row, int col); 
 		bool allCanMove(MoveDirection dir) const;
-		bool isFirstRowStuck() const;
-		bool isFirstColStuck() const;
+		bool isRowStuck(int row) const;
+		bool isColStuck(int col) const;
 		int countNonMergeableTile(MoveDirection dir, int row, int col) const;
 	};
 	
 	Greedy greedy;
 };
+
 
 #endif

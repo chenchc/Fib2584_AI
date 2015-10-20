@@ -18,10 +18,10 @@ public:
 	void gameOver(int board[4][4], int iScore);
 
 private:
-	class Greedy
+	class Heuristic
 	{
 	public:
-		Greedy();
+		Heuristic();
 		void initialize();
 		MoveDirection operator()(int board[4][4]);
 	private:
@@ -62,8 +62,8 @@ private:
 		bool isColStuck(int col) const;
 		int countNonMergeableTile(MoveDirection dir, int row, int col) const;
 	};
-	
-	Greedy greedy;
+
+	Heuristic heuristic;
 };
 
 

@@ -67,12 +67,18 @@ private:
 	class TDLearning
 	{
 	public:
-		TDLearning(const std::string &filename = std::string("weight.dat"), 
-			bool trainMode = true);
+		TDLearning(bool trainMode = false, 
+			const std::string &filename = std::string("weight.dat"));
 		~TDLearning();
 		MoveDirection operator()(const int board[4][4]);
 		void gameover(const int board[4][4], int iScore);
 	private:
+		const int scale = 128;	// alpha = 1 / 128
+
+		std::string filename;
+		bool trainMode;
+		int *weightOuter;
+		int *weightInner;
 		
 	};
 

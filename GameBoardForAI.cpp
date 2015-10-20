@@ -25,9 +25,9 @@ int invFibonacci(const int fib)
 GameBoardForAI::GameBoardForAI(const int board[4][4])
 :	board_(0)
 {
-	for (int i = 15; i >= 0; i--) {
-		int invFib = invFibonacci(board[3 - (i / 4)][3 - (i % 4)]);
-		board_ = (board_ << 5) + (invFib & 0x1f);
+	for (int i = 0; i < 16; i++) {
+		int invFib = invFibonacci(board[i / 4][i % 4]);
+		board_ = (board_ << 5) | BitBoard(invFib & 0x1f);
 	}
 }
 

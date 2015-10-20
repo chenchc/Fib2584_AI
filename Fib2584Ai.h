@@ -2,10 +2,13 @@
 #define __FIB2584AI_H__
 
 #include "Fib2584/MoveDirection.h"
+#include "Fib2584/BitBoard.h"
+#include "GameBoardForAI.h"
 #include <cstdlib>
 #include <ctime>
-#include <vector>
+#include <stack>
 #include <string>
+#include <vector>
 
 class Fib2584Ai
 {
@@ -67,22 +70,36 @@ private:
 	class TDLearning
 	{
 	public:
-		TDLearning(bool trainMode = false, 
+		TDLearning(bool trainMode = true, 
 			const std::string &filename = std::string("weight.dat"));
 		~TDLearning();
+		void initialize();
 		MoveDirection operator()(const int board[4][4]);
-		void gameover(const int board[4][4], int iScore);
+		void gameover();
 	private:
-		const int scale = 128;	// alpha = 1 / 128
+		struct FeatureBoard {
+			FeatureBoard() {}
+			FeatureBoard(GameBoardForAI &board, int reward);
+			FeatureBoard(const FeatureBoard &src);
+
+			unsigned int outer[4];
+			unsigned int inner[4];
+			int reward;	// Scaled reward
+		};
+
+		const int SCALE = 128;	// alpha = 1 / 128
 
 		std::string filename;
 		bool trainMode;
 		int *weightOuter;
 		int *weightInner;
-		
+		std::stack<FeatureBoard> record;
+
+		int getFeatureBoardValue(const FeatureBoard &feature) const;
+		unsigned int reverseFeature(unsigned int a);
 	};
 
-	Heuristic heuristic;
+	TDLearning td;
 };
 
 

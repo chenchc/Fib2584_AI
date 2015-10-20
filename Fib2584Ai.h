@@ -1,10 +1,11 @@
 #ifndef __FIB2584AI_H__
 #define __FIB2584AI_H__
 
+#include "Fib2584/MoveDirection.h"
 #include <cstdlib>
 #include <ctime>
 #include <vector>
-#include "Fib2584/MoveDirection.h"
+#include <string>
 
 class Fib2584Ai
 {
@@ -61,6 +62,18 @@ private:
 		bool isRowStuck(int row) const;
 		bool isColStuck(int col) const;
 		int countNonMergeableTile(MoveDirection dir, int row, int col) const;
+	};
+
+	class TDLearning
+	{
+	public:
+		TDLearning(const std::string &filename = std::string("weight.dat"), 
+			bool trainMode = true);
+		~TDLearning();
+		MoveDirection operator()(const int board[4][4]);
+		void gameover(const int board[4][4], int iScore);
+	private:
+		
 	};
 
 	Heuristic heuristic;

@@ -45,6 +45,7 @@ MoveDirection Fib2584Ai::TDLearning::operator()(const int board[4][4])
 	int bestValuePlusReward = INT_MIN;
 	int bestReward;
 	FeatureBoard bestFeature;
+	//static int rewardLast = 0;
 
 	// Find the best direction to move
 	for (int dir = 0; dir < 4; dir++) {
@@ -64,19 +65,46 @@ MoveDirection Fib2584Ai::TDLearning::operator()(const int board[4][4])
 	
 	// Push the direction into record
 	if (trainMode) {
+		//std::cout << (rewardLast + bestValuePlusReward) / SCALE << std::endl;
+		//rewardLast += bestReward;
 		record.push(bestFeature);
 	}
 
 	return bestDir;
 }
 
-void Fib2584Ai::TDLearning::gameover()
+void Fib2584Ai::TDLearning::gameover(const int board[4][4])
 {
 	const int alpha = 1;
 
 	if (trainMode) {
-		FeatureBoard nextFeature = record.top();
-		record.pop();
+		FeatureBoard nextFeature;
+
+		// Value of endBoard should be 0
+		{
+			GameBoardForAI endBoard(board);
+			FeatureBoard feature(endBoard, 0);
+			int delta = -getFeatureBoardValue(feature);
+					
+			for (int i = 0; i < 4; i++) {
+				weightOuter[feature.outer[i]] += alpha * delta / SCALE;
+				
+				unsigned int rev = reverseFeature(feature.outer[i]);
+				if (rev != feature.outer[i]) {
+					weightOuter[rev] += alpha * delta / SCALE;
+				}
+			}
+			for (int i = 0; i < 4; i++) {
+				weightInner[feature.inner[i]] += alpha * delta / SCALE;
+				
+				unsigned int rev = reverseFeature(feature.inner[i]);
+				if (rev != feature.inner[i]) {
+					weightInner[rev] += alpha * delta / SCALE;
+				}
+			}
+			
+			nextFeature = feature;	
+		}
 
 		while (!record.empty()) {
 			FeatureBoard feature = record.top();
@@ -144,7 +172,7 @@ int Fib2584Ai::TDLearning::getFeatureBoardValue(const FeatureBoard &feature)
 	return value;
 }
 
-unsigned int Fib2584Ai::TDLearning::reverseFeature(unsigned int a)
+unsigned int Fib2584Ai::TDLearning::reverseFeature(unsigned int a) const
 {
 	unsigned int result = 0;
 

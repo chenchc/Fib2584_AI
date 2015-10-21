@@ -21,6 +21,6 @@ MoveDirection Fib2584Ai::generateMove(int board[4][4])
 
 void Fib2584Ai::gameOver(int board[4][4], int iScore)
 {
-	td.gameover();
+	td.gameover(board);
 }
 

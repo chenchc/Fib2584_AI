@@ -75,7 +75,7 @@ private:
 		~TDLearning();
 		void initialize();
 		MoveDirection operator()(const int board[4][4]);
-		void gameover();
+		void gameover(const int board[4][4]);
 	private:
 		struct FeatureBoard {
 			FeatureBoard() {}
@@ -96,7 +96,7 @@ private:
 		std::stack<FeatureBoard> record;
 
 		int getFeatureBoardValue(const FeatureBoard &feature) const;
-		unsigned int reverseFeature(unsigned int a);
+		unsigned int reverseFeature(unsigned int a) const;
 	};
 
 	TDLearning td;

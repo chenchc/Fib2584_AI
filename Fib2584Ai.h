@@ -87,7 +87,7 @@ private:
 			int reward;	// Scaled reward
 		};
 
-		const int SCALE = 128;	// alpha = 1 / 128
+		const int SCALE = 32768;	// alpha = 1 / 128
 
 		std::string filename;
 		bool trainMode;

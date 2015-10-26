@@ -75,7 +75,7 @@ MoveDirection Fib2584Ai::TDLearning::operator()(const int board[4][4])
 
 void Fib2584Ai::TDLearning::gameover(const int board[4][4])
 {
-	const int alpha = 2;
+	const int alpha = 1;
 
 	if (trainMode) {
 		FeatureBoard nextFeature;

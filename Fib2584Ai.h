@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 
+const int NUM_BAND = 8;
+
 class Fib2584Ai
 {
 public:
@@ -87,7 +89,7 @@ private:
 			int reward;	// Scaled reward
 		};
 
-		const int SCALE = 32768;	// alpha = 1 / 128
+		const int SCALE = 32768;
 
 		std::string filename;
 		bool trainMode;
@@ -99,7 +101,45 @@ private:
 		unsigned int reverseFeature(unsigned int a) const;
 	};
 
-	TDLearning td;
+	class TDLearningNew
+	{
+	public:
+		TDLearningNew(bool trainMode = true, 
+			const std::string &filename = std::string("weight.dat"));
+		~TDLearningNew();
+		void initialize();
+		MoveDirection operator()(const int board[4][4]);
+		void gameover(const int board[4][4]);
+	private:
+
+		struct FeatureBoard {
+			FeatureBoard() {}
+			FeatureBoard(GameBoardForAI &board, int reward);
+			FeatureBoard(const FeatureBoard &src);
+			void applyBandMaskOnFeature(unsigned int *bandSet, 
+				unsigned int first, unsigned int second) const;
+
+			unsigned int outer[4][NUM_BAND];	// [dir][band]
+			unsigned int inner[2][NUM_BAND];	// [dir][band]
+			int reward;	// Scaled reward
+		};
+
+		const int SCALE = 32768;
+
+		std::string filename;
+		bool trainMode;
+		int *weightOuter[NUM_BAND];
+		int *weightInner[NUM_BAND];
+		std::stack<FeatureBoard> record;
+
+		long long getFeatureBoardValue(const FeatureBoard &feature) const;
+		inline unsigned int reverseFeature_rotate(unsigned int a) const;
+		inline unsigned int reverseFeature_44(unsigned int a) const;
+		inline unsigned int reverseFeature_2222(unsigned int a) const;
+		void adjustWeight(const FeatureBoard &feature, int adjust);
+	};
+
+	TDLearningNew td;
 };
 
 

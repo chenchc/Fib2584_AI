@@ -2,7 +2,7 @@
 #define __GAMEBOARD_H__
 
 #include <iostream>
-#include "MoveDirection.h"
+#include "Typedefs.h"
 #include "MoveTable.h"
 #include "BitBoard.h"
 #include "Random.h"

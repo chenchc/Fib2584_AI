@@ -1,7 +1,7 @@
 #ifndef __FIB2584AI_H__
 #define __FIB2584AI_H__
 
-#include "Fib2584/MoveDirection.h"
+#include "Fib2584/Typedefs.h"
 #include "Fib2584/BitBoard.h"
 #include "GameBoardForAI.h"
 #include <cstdlib>
@@ -19,7 +19,8 @@ public:
 	// initialize ai
 	void initialize(int argc, char* argv[]);
 	// generate one move
-	MoveDirection generateMove(int board[4][4]);
+	MoveDirection generateMove(int board[4][4], int moveCount = 0);
+	int generateEvilMove(int board[4][4], int moveCount);
 	// do some action when game over
 	void gameOver(int board[4][4], int iScore);
 

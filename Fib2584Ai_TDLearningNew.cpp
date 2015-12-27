@@ -130,7 +130,7 @@ void Fib2584Ai::TDLearningNew::adjustWeight(const FeatureBoard &feature,
 
 void Fib2584Ai::TDLearningNew::gameover(const int board[4][4])
 {
-	const int alpha = 16;
+	const int alpha = 1;
 
 	if (trainMode) {
 		FeatureBoard nextFeature;

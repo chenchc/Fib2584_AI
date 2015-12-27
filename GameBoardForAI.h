@@ -6,7 +6,7 @@
 #define __GAMEBOARDFORAI_H__
 
 #include <iostream>
-#include "Fib2584/MoveDirection.h"
+#include "Fib2584/Typedefs.h"
 #include "Fib2584/MoveTable.h"
 #include "Fib2584/BitBoard.h"
 #include "Fib2584/Random.h"

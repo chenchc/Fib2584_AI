@@ -2,5 +2,5 @@
 
 while true 
 do
-	./old 10000
+	./train 10000
 done

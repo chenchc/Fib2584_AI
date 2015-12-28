@@ -2,10 +2,10 @@
 #define __GAMEBOARD_H__
 
 #include <iostream>
-#include "Typedefs.h"
-#include "MoveTable.h"
-#include "BitBoard.h"
-#include "Random.h"
+#include "Fib2584/Typedefs.h"
+#include "Fib2584/MoveTable.h"
+#include "Fib2584/BitBoard.h"
+#include "Fib2584/Random.h"
 
 using namespace std;
 
@@ -17,17 +17,20 @@ private:
 	static Random random_;
 public:
 	GameBoard();
+	GameBoard(const GameBoard &src); // Added
+	GameBoard(const int board[4][4]); // Added
+
 	void initialize();
 	int move(MoveDirection moveDirection);
-	void addRandomTile();
+	void addRandomTile(int pos, int moveIndex); // Not random any more
 	bool terminated();
 	void getArrayBoard(int board[4][4]);
 	int getMaxTile();
 	void showBoard();
 	bool operator==(GameBoard gameBoard);
+	BitBoard getRow(int row); // Move to public
+	BitBoard getColumn(int column); // Move to public
 private:
-	BitBoard getRow(int row);
-	BitBoard getColumn(int column);
 	BitBoard restoreRow(BitBoard rowBits, int row);
 	BitBoard restoreColumn(BitBoard columnBits, int column);
 	int countEmptyTile();

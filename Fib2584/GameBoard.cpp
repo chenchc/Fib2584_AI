@@ -8,11 +8,32 @@ board_(0)
 {
 }
 
+GameBoard::GameBoard(const GameBoard &src)
+:	board_(src.board_)
+{
+}
+
+int invFibonacci(const int fib)
+{
+	for (int i = 0; i < 32; i++) {
+		if (GameBoard::fibonacci_[i] == fib)
+			return i;
+	}
+	return -1;
+}
+
+GameBoard::GameBoard(const int board[4][4])
+:	board_(0)
+{
+	for (int i = 0; i < 16; i++) {
+		int invFib = invFibonacci(board[i / 4][i % 4]);
+		board_ = (board_ << 5) | BitBoard(invFib & 0x1f);
+	}
+}
+
 void GameBoard::initialize()
 {
 	board_ = 0;
-	addRandomTile();
-	addRandomTile();
 }
 
 int GameBoard::move(MoveDirection moveDirection)
@@ -39,6 +60,7 @@ int GameBoard::move(MoveDirection moveDirection)
 	return score;
 }
 
+/*
 void GameBoard::addRandomTile()
 {
 	int oneTileRate = 6;
@@ -55,6 +77,25 @@ void GameBoard::addRandomTile()
 		}
 		count++;
 	}
+}
+*/
+
+void GameBoard::addRandomTile(int pos, int moveIndex)
+{
+	const unsigned char randomTileList[5] = {1, 3, 1, 1, 3};
+	BitBoard randomTile = randomTileList[moveIndex % 5];
+	BitBoard mask = 0x1f;
+
+	for (int i = 0; i < 15 - pos; i++) {
+		randomTile <<= 5;
+		mask <<= 5;
+	}
+	if ((board_ & mask) != 0) {
+		fprintf(stderr, "Invalid random tile\n");
+		exit(1);
+	}
+
+	board_ |= randomTile;
 }
 
 int GameBoard::countEmptyTile()

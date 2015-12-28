@@ -63,7 +63,7 @@ void Fib2584Ai::TDLearningNew::initialize()
 
 MoveDirection Fib2584Ai::TDLearningNew::operator()(const int board[4][4])
 {
-	GameBoardForAI initBoard(board);
+	GameBoard initBoard(board);
 	MoveDirection bestDir;
 	long long bestValuePlusReward = INT_MIN;
 	//int bestReward;
@@ -72,7 +72,7 @@ MoveDirection Fib2584Ai::TDLearningNew::operator()(const int board[4][4])
 	
 	// Find the best direction to move
 	for (int dir = 0; dir < 4; dir++) {
-		GameBoardForAI newBoard(initBoard);
+		GameBoard newBoard(initBoard);
 		int reward = newBoard.move((MoveDirection)dir) * SCALE;
 		if (newBoard == initBoard)
 			continue;
@@ -155,7 +155,7 @@ void Fib2584Ai::TDLearningNew::gameover(const int board[4][4])
 
 		// Value of endBoard should be 0
 		{
-			GameBoardForAI endBoard(board);
+			GameBoard endBoard(board);
 			FeatureBoard feature(endBoard, 0);
 			long long delta = -getFeatureBoardValue(feature);
 						
@@ -178,7 +178,7 @@ void Fib2584Ai::TDLearningNew::gameover(const int board[4][4])
 	}
 }
 
-Fib2584Ai::TDLearningNew::FeatureBoard::FeatureBoard(GameBoardForAI &board, 
+Fib2584Ai::TDLearningNew::FeatureBoard::FeatureBoard(GameBoard &board, 
 	int reward)
 :	reward(reward)
 {

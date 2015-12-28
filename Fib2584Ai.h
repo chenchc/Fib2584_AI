@@ -3,7 +3,7 @@
 
 #include "Fib2584/Typedefs.h"
 #include "Fib2584/BitBoard.h"
-#include "GameBoardForAI.h"
+#include "Fib2584/GameBoard.h"
 #include <cstdlib>
 #include <ctime>
 #include <stack>
@@ -19,7 +19,7 @@ public:
 	// initialize ai
 	void initialize(int argc, char* argv[]);
 	// generate one move
-	MoveDirection generateMove(int board[4][4], int moveCount = 0);
+	MoveDirection generateMove(int board[4][4], int moveCount);
 	int generateEvilMove(int board[4][4], int moveCount);
 	// do some action when game over
 	void gameOver(int board[4][4], int iScore);
@@ -82,7 +82,7 @@ private:
 	private:
 		struct FeatureBoard {
 			FeatureBoard() {}
-			FeatureBoard(GameBoardForAI &board, int reward);
+			FeatureBoard(GameBoard &board, int reward);
 			FeatureBoard(const FeatureBoard &src);
 
 			unsigned int outer[4];
@@ -115,7 +115,7 @@ private:
 
 		struct FeatureBoard {
 			FeatureBoard() {}
-			FeatureBoard(GameBoardForAI &board, int reward);
+			FeatureBoard(GameBoard &board, int reward);
 			FeatureBoard(const FeatureBoard &src);
 			void applyBandMaskOnFeature(unsigned int *bandSet, 
 				unsigned int first, unsigned int second) const;

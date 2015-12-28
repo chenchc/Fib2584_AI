@@ -120,6 +120,7 @@ private:
 			void applyBandMaskOnFeature(unsigned int *bandSet, 
 				unsigned int first, unsigned int second) const;
 
+			//int numTile[32];					// [tileType]
 			unsigned int outer[4][NUM_BAND];	// [dir][band]
 			unsigned int inner[2][NUM_BAND];	// [dir][band]
 			int reward;	// Scaled reward
@@ -129,6 +130,7 @@ private:
 
 		std::string filename;
 		bool trainMode;
+		//int weightNumTile[32][16];
 		int *weightOuter[NUM_BAND];
 		int *weightInner[NUM_BAND];
 		std::stack<FeatureBoard> record;

@@ -12,6 +12,14 @@ Fib2584Ai::TDLearningNew::TDLearningNew(bool trainMode,
 	const int featureNum = 8 * 8 * 8 * 8 * 8 * 8 * 8 * 8;
 	ifstream fin(filename.c_str(), ifstream::in | ifstream::binary);
 
+	/*
+	for (int tileType = 0; tileType < 32; tileType++) {
+		memset(weightNumTile[tileType], 0, 16 * sizeof(int));
+		if (!fin.fail()) {
+			fin.read((char *)weightNumTile[tileType], 16 * sizeof(int));
+		}
+	}
+	*/
 	for (int band = 0; band < NUM_BAND; band++) {
 		weightOuter[band] = new int[featureNum](); 
 		if (!fin.fail()) {
@@ -33,6 +41,11 @@ Fib2584Ai::TDLearningNew::~TDLearningNew()
 	if (trainMode) {
 		ofstream fout(filename.c_str(), ifstream::out | ifstream::binary | 
 			ifstream::trunc);
+		/*
+		for (int tileType = 0; tileType < 32; tileType++) {
+			fout.write((char *)weightNumTile[tileType], 16 * sizeof(int));
+		}
+		*/
 		for (int band = 0; band < NUM_BAND; band++) {
 			fout.write((char *)weightOuter[band], featureNum * sizeof(int));
 			delete [] weightOuter[band];
@@ -86,6 +99,11 @@ MoveDirection Fib2584Ai::TDLearningNew::operator()(const int board[4][4])
 void Fib2584Ai::TDLearningNew::adjustWeight(const FeatureBoard &feature, 
 	int adjust)
 {
+	/*
+	for (int i = 0; i < 32; i++) {
+		weightNumTile[i][feature.numTile[i]] += adjust;
+	}
+	*/
 	for (int i = 0; i < 4; i++) {
 		for (int band = 0; band < NUM_BAND; band++) {
 			unsigned int ori = feature.outer[i][band];
@@ -130,7 +148,7 @@ void Fib2584Ai::TDLearningNew::adjustWeight(const FeatureBoard &feature,
 
 void Fib2584Ai::TDLearningNew::gameover(const int board[4][4])
 {
-	const int alpha = 1;
+	const int alpha = 16;
 
 	if (trainMode) {
 		FeatureBoard nextFeature;
@@ -174,6 +192,20 @@ Fib2584Ai::TDLearningNew::FeatureBoard::FeatureBoard(GameBoardForAI &board,
 		col[i] = board.getColumn(i);
 	}
 
+	// numTile
+	/*
+	memset((char *)numTile, 0, 32 * sizeof(int));
+	for (int i = 0; i < 4; i++) {
+		unsigned int rowCopy = row[i];
+		for (int j = 0; j < 4; j++) {
+			unsigned char tile = (rowCopy & 0x1f);
+			numTile[tile]++;
+			rowCopy >>= 5;
+		}
+	}
+	*/
+
+	// outer & inner
 	applyBandMaskOnFeature(outer[0], row[0], row[1]);
 	applyBandMaskOnFeature(outer[1], row[3], row[2]);
 	applyBandMaskOnFeature(outer[2], col[0], col[1]);
@@ -185,6 +217,8 @@ Fib2584Ai::TDLearningNew::FeatureBoard::FeatureBoard(GameBoardForAI &board,
 Fib2584Ai::TDLearningNew::FeatureBoard::FeatureBoard(const FeatureBoard &src)
 :	reward(src.reward)
 {
+	//memcpy(numTile, src.numTile, 32 * sizeof(int));
+
 	for (int i = 0; i < 4; i++)
 		for (int band = 0; band < NUM_BAND; band++)
 			outer[i][band] = src.outer[i][band];
@@ -198,6 +232,11 @@ long long Fib2584Ai::TDLearningNew::getFeatureBoardValue(
 {
 	long long value = 0;
 
+	/*
+	for (int i = 0; i < 32; i++) {
+		value += weightNumTile[i][feature.numTile[i]];
+	}
+	*/
 	for (int i = 0; i < 4; i++) {
 		for (int band = 0; band < NUM_BAND; band++)
 			value += weightOuter[band][feature.outer[i][band]];

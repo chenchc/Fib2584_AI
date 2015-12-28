@@ -1,6 +1,7 @@
 #include "Fib2584Ai.h"
 
-Fib2584Ai::Fib2584Ai()
+Fib2584Ai::Fib2584Ai(bool trainMode)
+:	td(trainMode)
 {
 }
 

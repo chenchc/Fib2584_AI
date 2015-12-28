@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
 	}
 	int iPlayRounds = atoi(argv[1]);
 	// create and initialize AI
-	Fib2584Ai ai;
+	Fib2584Ai ai(true);
 	ai.initialize(argc, argv);
 
 	// initialize statistic data

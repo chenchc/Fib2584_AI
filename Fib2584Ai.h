@@ -15,7 +15,7 @@ const int NUM_BAND = 8;
 class Fib2584Ai
 {
 public:
-	Fib2584Ai();
+	Fib2584Ai(bool trainMode = false);
 	// initialize ai
 	void initialize(int argc, char* argv[]);
 	// generate one move

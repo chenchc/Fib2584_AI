@@ -87,7 +87,8 @@ int MoveTable::move_row(uint& row, int start_pos, int end_pos, int direction, bo
 				restore_tile_count++;
 			}
 			find_tile_mask = new_tile;
-			score += get_fibonacci(new_tile);
+			//score += get_fibonacci(new_tile);
+			score += new_tile;
 			find_tile_mask <<= restore_tile_count * 5;
 			uint add_tile_mask = direction?(find_tile_mask >> (5 * shift_count)):(find_tile_mask << (5 * shift_count));
 			row &= ~(find_mask | tile_mask);

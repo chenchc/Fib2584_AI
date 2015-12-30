@@ -16,7 +16,9 @@ int main(int argc, char* argv[])
 	int iPlayRounds = atoi(argv[1]);
 	// create and initialize AI
 	Fib2584Ai ai(true);
+	Fib2584Ai ai_evil(false, "weight_evil.dat");
 	ai.initialize(argc, argv);
+	ai_evil.initialize(argc, argv);
 
 	// initialize statistic data
 	Statistic statistic;
@@ -31,12 +33,12 @@ int main(int argc, char* argv[])
 
 		// First random
 		gameBoard.getArrayBoard(arrayBoard);
-		gameBoard.addRandomTile(ai.generateEvilMove(arrayBoard, moveIndex), 
+		gameBoard.addRandomTile(ai_evil.generateEvilMove(arrayBoard, moveIndex), 
 			moveIndex);
 		// Second random
 		moveIndex++;
 		gameBoard.getArrayBoard(arrayBoard);
-		gameBoard.addRandomTile(ai.generateEvilMove(arrayBoard, moveIndex), 
+		gameBoard.addRandomTile(ai_evil.generateEvilMove(arrayBoard, moveIndex), 
 			moveIndex);
 		
 		while(!gameBoard.terminated()) {
@@ -54,7 +56,7 @@ int main(int argc, char* argv[])
 
 			moveIndex++;
 			gameBoard.getArrayBoard(arrayBoard);
-			gameBoard.addRandomTile(ai.generateEvilMove(arrayBoard, moveIndex), 
+			gameBoard.addRandomTile(ai_evil.generateEvilMove(arrayBoard, moveIndex), 
 				moveIndex);
 		}
 		gameBoard.getArrayBoard(arrayBoard);

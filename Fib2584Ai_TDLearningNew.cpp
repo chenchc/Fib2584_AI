@@ -2,12 +2,16 @@
 #include <fstream>
 #include <iostream>
 #include <climits>
+#include <cmath>
+#include <cfloat>
+#include <cassert>
 using namespace std;
 
-Fib2584Ai::TDLearningNew::TDLearningNew(bool trainMode, 
+Fib2584Ai::TDLearningNew::TDLearningNew(bool trainMode, bool softmaxMode,
 	const std::string &filename)
 :	filename(filename), 
-	trainMode(trainMode)
+	trainMode(trainMode),
+	softmaxMode(softmaxMode)
 {
 	const int featureNum = 8 * 8 * 8 * 8 * 8 * 8 * 8 * 8;
 	ifstream fin(filename.c_str(), ifstream::in | ifstream::binary);
@@ -64,36 +68,86 @@ void Fib2584Ai::TDLearningNew::initialize()
 MoveDirection Fib2584Ai::TDLearningNew::operator()(const int board[4][4])
 {
 	GameBoard initBoard(board);
-	MoveDirection bestDir;
-	long long bestValuePlusReward = INT_MIN;
-	//int bestReward;
-	FeatureBoard bestFeature;
-	//static int rewardLast = 0;
+	FeatureBoard initFeature(initBoard, 0);
+	long long initValue = getFeatureBoardValue(initFeature);
+	FeatureBoard feature[4];
+	int score[4];
 	
 	// Find the best direction to move
 	for (int dir = 0; dir < 4; dir++) {
 		GameBoard newBoard(initBoard);
 		int reward = newBoard.move((MoveDirection)dir) * SCALE;
-		if (newBoard == initBoard)
+		if (newBoard == initBoard) {
+			score[dir] = INT_MIN;
 			continue;
-		FeatureBoard newFeature(newBoard, reward);
-		long long valuePlusReward = getFeatureBoardValue(newFeature) + reward;
-		if (valuePlusReward > bestValuePlusReward) {
-			bestDir = (MoveDirection)dir;
-			bestValuePlusReward = valuePlusReward;
-			//bestReward = reward;
-			bestFeature = newFeature;
 		}
+		feature[dir] = FeatureBoard(newBoard, reward);
+		long long valuePlusReward = getFeatureBoardValue(feature[dir]) + 
+			reward;
+		score[dir] = valuePlusReward - initValue;
 	}
+
+	MoveDirection bestDir;
+	if (softmaxMode)
+		bestDir = (MoveDirection)softmaxSelect(score, 4);
+	else
+		bestDir = (MoveDirection)maxSelect(score, 4);
+
+	const FeatureBoard &bestFeature = feature[bestDir];
 
 	// Push the direction into record
 	if (trainMode) {
-		//std::cout << (rewardLast + bestValuePlusReward) / SCALE << std::endl;
-		//rewardLast += bestReward;
 		record.push(bestFeature);
 	}
 
 	return bestDir;
+}
+
+int Fib2584Ai::TDLearningNew::generateEvilMove(int board[4][4], int moveCount)
+{
+	GameBoard initBoard(board);
+	FeatureBoard initFeature(initBoard, 0);
+	long long initValue = getFeatureBoardValue(initFeature);
+	int score[16];
+
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			if (board[i][j] != 0) {
+				score[i * 4 + j] = INT_MIN;
+				continue;
+			}
+
+			// Place the random tile
+			GameBoard beforeBoard(initBoard);
+			beforeBoard.addRandomTile(i * 4 + j, moveCount);
+
+			// Select the best for opponent
+			long long bestValuePlusReward = INT_MIN;
+			for (int dir = 0; dir < 4; dir++) {
+				GameBoard afterBoard(beforeBoard);
+				int reward = afterBoard.move((MoveDirection)dir) * SCALE;
+				if (afterBoard == initBoard)
+					continue;
+				FeatureBoard afterFeature(afterBoard, reward);
+				long long valuePlusReward = 
+					getFeatureBoardValue(afterFeature) + reward;
+				if (valuePlusReward > bestValuePlusReward) {
+					bestValuePlusReward = valuePlusReward;
+				}
+			}
+
+			// Renew score
+			score[i * 4 + j] = -(bestValuePlusReward - initValue);
+		}
+	}
+
+	int worstPlace;
+	if (softmaxMode)
+		worstPlace = softmaxSelect(score, 16);
+	else
+		worstPlace = maxSelect(score, 16);
+
+	return worstPlace;
 }
 
 void Fib2584Ai::TDLearningNew::adjustWeight(const FeatureBoard &feature, 
@@ -148,7 +202,7 @@ void Fib2584Ai::TDLearningNew::adjustWeight(const FeatureBoard &feature,
 
 void Fib2584Ai::TDLearningNew::gameover(const int board[4][4])
 {
-	const int alpha = 16;
+	const int alpha = 4;
 
 	if (trainMode) {
 		FeatureBoard nextFeature;
@@ -307,4 +361,54 @@ void Fib2584Ai::TDLearningNew::FeatureBoard::applyBandMaskOnFeature(
 		for (int band = 0; band < NUM_BAND; band++) 
 			bandSet[band] = (bandSet[band] << 3) + applyBandMask(tile, band);
 	}
+}
+
+int Fib2584Ai::TDLearningNew::softmaxSelect(int *score, int size) const
+{
+	double *expScore = new double[size];
+	const double tau = 2.0;
+	double expScoreTotal = 0.0;
+	
+	for (int i = 0; i < size; i++) {
+		if (score[i] == INT_MIN)
+			expScore[i] = 0;
+		else {
+			expScore[i] = exp((double)score[i] / (double)SCALE / tau);
+			if (expScore[i] == 0)
+				expScore[i] = DBL_MIN;
+			//cout << expScore[i] << endl;
+			expScoreTotal += expScore[i];
+		}
+	}
+	//cin.get();
+
+	double random = (double)rand() / RAND_MAX * expScoreTotal;
+	double expScoreCum = 0.0;
+	for (int i = 0; i < size; i++) {
+		if (expScore[i] == 0)
+			continue;
+		expScoreCum += expScore[i];
+		if (expScoreCum >= random) {
+			delete [] expScore;
+			return i;
+		}
+	}
+
+	assert(false);
+	return -1;
+}
+
+int Fib2584Ai::TDLearningNew::maxSelect(int *score, int size) const
+{
+	int result;
+	int maxScore = INT_MIN;
+	
+	for (int i = 0; i < size; i++) {
+		if (score[i] > maxScore) {
+			maxScore = score[i];
+			result = i;
+		}
+	}
+
+	return result;
 }

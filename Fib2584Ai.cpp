@@ -1,7 +1,7 @@
 #include "Fib2584Ai.h"
 
-Fib2584Ai::Fib2584Ai(bool trainMode)
-:	td(trainMode)
+Fib2584Ai::Fib2584Ai(bool trainMode, const std::string &weight)
+:	td(trainMode, trainMode, weight)
 {
 }
 
@@ -22,6 +22,7 @@ MoveDirection Fib2584Ai::generateMove(int board[4][4], int moveCount)
 
 int Fib2584Ai::generateEvilMove(int board[4][4], int moveCount)
 {
+	/*
 	int random;
 
 	do {
@@ -29,6 +30,8 @@ int Fib2584Ai::generateEvilMove(int board[4][4], int moveCount)
 	} while (board[random / 4][random % 4] != 0);
 
 	return random;
+	*/
+	return td.generateEvilMove(board, moveCount);
 }
 
 void Fib2584Ai::gameOver(int board[4][4], int iScore)

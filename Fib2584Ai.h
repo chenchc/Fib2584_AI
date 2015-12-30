@@ -15,7 +15,8 @@ const int NUM_BAND = 8;
 class Fib2584Ai
 {
 public:
-	Fib2584Ai(bool trainMode = false);
+	Fib2584Ai(bool trainMode = false, 
+		const std::string &weight = "weight.dat");
 	// initialize ai
 	void initialize(int argc, char* argv[]);
 	// generate one move
@@ -105,11 +106,12 @@ private:
 	class TDLearningNew
 	{
 	public:
-		TDLearningNew(bool trainMode = true, 
+		TDLearningNew(bool trainMode = false, bool softmaxMode = false,
 			const std::string &filename = std::string("weight.dat"));
 		~TDLearningNew();
 		void initialize();
 		MoveDirection operator()(const int board[4][4]);
+		int generateEvilMove(int board[4][4], int moveCount);
 		void gameover(const int board[4][4]);
 	private:
 
@@ -130,6 +132,7 @@ private:
 
 		std::string filename;
 		bool trainMode;
+		bool softmaxMode;
 		//int weightNumTile[32][16];
 		int *weightOuter[NUM_BAND];
 		int *weightInner[NUM_BAND];
@@ -140,6 +143,8 @@ private:
 		inline unsigned int reverseFeature_44(unsigned int a) const;
 		inline unsigned int reverseFeature_2222(unsigned int a) const;
 		void adjustWeight(const FeatureBoard &feature, int adjust);
+		int softmaxSelect(int *score, int size) const;
+		int maxSelect(int *score, int size) const;
 	};
 
 	TDLearningNew td;

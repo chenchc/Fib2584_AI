@@ -1,7 +1,8 @@
 #include "Fib2584Ai.h"
 
-Fib2584Ai::Fib2584Ai(bool trainMode, const std::string &weight)
-:	td(trainMode, trainMode, weight)
+Fib2584Ai::Fib2584Ai(bool trainMode, bool softmaxMode, 
+	const std::string &weight)
+:	td(trainMode, softmaxMode, weight)
 {
 }
 

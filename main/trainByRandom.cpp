@@ -7,18 +7,28 @@
 
 using namespace std;
 
+int genRandomEvilMove(int arrayBoard[4][4])
+{
+	int random;
+
+	do {
+		random = rand() % 16;
+	} while (arrayBoard[random / 4][random % 4] != 0);
+
+	return random;
+}
+
 int main(int argc, char* argv[])
 {
 	if(argc == 1) {
 		cerr << "usage: play_game rounds [other arguments which your AI needs]" << endl;
 		return 1;
 	}
+	srand(time(NULL));
 	int iPlayRounds = atoi(argv[1]);
 	// create and initialize AI
-	Fib2584Ai ai(true);
-	Fib2584Ai ai_evil(false, true, "weight.dat");
+	Fib2584Ai ai(false);
 	ai.initialize(argc, argv);
-	ai_evil.initialize(argc, argv);
 
 	// initialize statistic data
 	Statistic statistic;
@@ -33,12 +43,12 @@ int main(int argc, char* argv[])
 
 		// First random
 		gameBoard.getArrayBoard(arrayBoard);
-		gameBoard.addRandomTile(ai_evil.generateEvilMove(arrayBoard, moveIndex), 
+		gameBoard.addRandomTile(genRandomEvilMove(arrayBoard), 
 			moveIndex);
 		// Second random
 		moveIndex++;
 		gameBoard.getArrayBoard(arrayBoard);
-		gameBoard.addRandomTile(ai_evil.generateEvilMove(arrayBoard, moveIndex), 
+		gameBoard.addRandomTile(genRandomEvilMove(arrayBoard), 
 			moveIndex);
 		
 		while(!gameBoard.terminated()) {
@@ -56,7 +66,7 @@ int main(int argc, char* argv[])
 
 			moveIndex++;
 			gameBoard.getArrayBoard(arrayBoard);
-			gameBoard.addRandomTile(ai_evil.generateEvilMove(arrayBoard, moveIndex), 
+			gameBoard.addRandomTile(genRandomEvilMove(arrayBoard), 
 				moveIndex);
 		}
 		gameBoard.getArrayBoard(arrayBoard);

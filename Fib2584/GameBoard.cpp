@@ -80,7 +80,7 @@ void GameBoard::addRandomTile()
 }
 */
 
-void GameBoard::addRandomTile(int pos, int moveIndex)
+bool GameBoard::addRandomTile(int pos, int moveIndex)
 {
 	const unsigned char randomTileList[5] = {1, 3, 1, 1, 3};
 	BitBoard randomTile = randomTileList[moveIndex % 5];
@@ -91,11 +91,11 @@ void GameBoard::addRandomTile(int pos, int moveIndex)
 		mask <<= 5;
 	}
 	if ((board_ & mask) != 0) {
-		fprintf(stderr, "Invalid random tile\n");
-		exit(1);
+		return false;
 	}
 
 	board_ |= randomTile;
+	return true;
 }
 
 int GameBoard::countEmptyTile()

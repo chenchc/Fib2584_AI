@@ -15,8 +15,7 @@ const int NUM_BAND = 8;
 class Fib2584Ai
 {
 public:
-	Fib2584Ai(bool trainMode = false, bool softmaxMode = false, 
-		const std::string &weight = "weight.dat");
+	Fib2584Ai(const std::string &weight = "weight.dat");
 	// initialize ai
 	void initialize(int argc, char* argv[]);
 	// generate one move
@@ -113,6 +112,7 @@ private:
 		MoveDirection operator()(const int board[4][4]);
 		int generateEvilMove(int board[4][4], int moveCount);
 		void gameover(const int board[4][4]);
+		int evaluateBoard(GameBoard &board) const;
 	private:
 
 		struct FeatureBoard {
@@ -147,7 +147,26 @@ private:
 		int maxSelect(int *score, int size) const;
 	};
 
+	class AlphaBeta {
+	public:
+		AlphaBeta(int depth, const TDLearningNew &td);
+		MoveDirection generateMove(const int board[4][4], int moveCount) const;
+		int generateEvilMove(const int board[4][4], int moveCount) const;
+	private:
+		int depth;
+		const TDLearningNew &td;
+
+		int maxNode(MoveDirection &dir, const GameBoard &board, int alpha, 
+			int beta, int totalReward, int depth, int moveCount) const;
+		int minNode(int &evilPos, const GameBoard &board, int alpha, 
+			int beta, int totalReward, int depth, int moveCount) const;
+		int getNewDepth(GameBoard &board) const;
+	};
+
 	TDLearningNew td;
+	AlphaBeta ab;
+	int moveCountForPlay;
+	int moveCountForEvil;
 };
 
 

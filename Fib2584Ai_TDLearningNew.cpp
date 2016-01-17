@@ -202,7 +202,7 @@ void Fib2584Ai::TDLearningNew::adjustWeight(const FeatureBoard &feature,
 
 void Fib2584Ai::TDLearningNew::gameover(const int board[4][4])
 {
-	const int alpha = 4;
+	const int alpha = 1;
 
 	if (trainMode) {
 		FeatureBoard nextFeature;
@@ -366,7 +366,7 @@ void Fib2584Ai::TDLearningNew::FeatureBoard::applyBandMaskOnFeature(
 int Fib2584Ai::TDLearningNew::softmaxSelect(int *score, int size) const
 {
 	double *expScore = new double[size];
-	const double tau = 2.0;
+	const double tau = 32.0;
 	double expScoreTotal = 0.0;
 	
 	for (int i = 0; i < size; i++) {
@@ -411,4 +411,11 @@ int Fib2584Ai::TDLearningNew::maxSelect(int *score, int size) const
 	}
 
 	return result;
+}
+
+int Fib2584Ai::TDLearningNew::evaluateBoard(GameBoard &board) const
+{
+	FeatureBoard feature(board, 0);
+
+	return (int)(getFeatureBoardValue(feature) / (long long)SCALE);
 }

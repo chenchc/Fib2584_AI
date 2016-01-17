@@ -22,7 +22,7 @@ public:
 
 	void initialize();
 	int move(MoveDirection moveDirection);
-	void addRandomTile(int pos, int moveIndex); // Not random any more
+	bool addRandomTile(int pos, int moveIndex); // Not random any more
 	bool terminated();
 	void getArrayBoard(int board[4][4]);
 	int getMaxTile();
@@ -30,10 +30,10 @@ public:
 	bool operator==(GameBoard gameBoard);
 	BitBoard getRow(int row); // Move to public
 	BitBoard getColumn(int column); // Move to public
+	int countEmptyTile();
 private:
 	BitBoard restoreRow(BitBoard rowBits, int row);
 	BitBoard restoreColumn(BitBoard columnBits, int column);
-	int countEmptyTile();
 	int getTile(int row, int column);
 	int getFibonacci(int index);
 private:

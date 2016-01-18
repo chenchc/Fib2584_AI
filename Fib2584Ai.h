@@ -149,11 +149,11 @@ private:
 
 	class AlphaBeta {
 	public:
-		AlphaBeta(int depth, const TDLearningNew &td);
+		AlphaBeta(int maxTime_us, const TDLearningNew &td);
 		MoveDirection generateMove(const int board[4][4], int moveCount) const;
 		int generateEvilMove(const int board[4][4], int moveCount) const;
 	private:
-		int depth;
+		int maxTime_us;
 		const TDLearningNew &td;
 
 		int maxNode(MoveDirection &dir, const GameBoard &board, int alpha, 

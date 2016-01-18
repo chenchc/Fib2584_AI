@@ -1,11 +1,12 @@
 #include "Fib2584Ai.h"
 #include <climits>
 #include <cmath>
+#include <sys/time.h>
 
-Fib2584Ai::AlphaBeta::AlphaBeta(int depth, const TDLearningNew &td)
-:	depth(depth), td(td)
+Fib2584Ai::AlphaBeta::AlphaBeta(int maxTime_us, const TDLearningNew &td)
+:	maxTime_us(maxTime_us), td(td)
 {}
-
+/*
 int Fib2584Ai::AlphaBeta::getNewDepth(GameBoard &board) const
 {
 	int emptyTile = board.countEmptyTile();
@@ -20,14 +21,29 @@ int Fib2584Ai::AlphaBeta::getNewDepth(GameBoard &board) const
 
 	return newDepth;
 }
+*/
+
+inline int elapsedTime(const timeval &startTime, const timeval &endTime)
+{
+	return (endTime.tv_sec - startTime.tv_sec) * 1000000 + 
+		endTime.tv_usec - startTime.tv_usec;
+}
+
 MoveDirection Fib2584Ai::AlphaBeta::generateMove(const int board[4][4], 
 	int moveCount) const
 {
 	GameBoard convertedBoard(board);
 	MoveDirection dir;
+	timeval startTime, endTime;
 
-	maxNode(dir, convertedBoard, INT_MIN, INT_MAX, 0, 
-		getNewDepth(convertedBoard), moveCount);
+	gettimeofday(&startTime, 0);
+	for (int i = 0; i < 32; i++) {
+		maxNode(dir, convertedBoard, INT_MIN, INT_MAX, 0, 
+			i, moveCount);
+		gettimeofday(&endTime, 0);
+		if (elapsedTime(startTime, endTime) > maxTime_us)
+			break;
+	}
 
 	return dir;
 }
@@ -37,10 +53,16 @@ int Fib2584Ai::AlphaBeta::generateEvilMove(const int board[4][4],
 {
 	GameBoard convertedBoard(board);
 	int evilPos;
+	timeval startTime, endTime;
 
-	minNode(evilPos, convertedBoard, INT_MIN, INT_MAX, 0, 
-		getNewDepth(convertedBoard), moveCount);
-
+	gettimeofday(&startTime, 0);
+	for (int i = 0; i < 32; i++) {
+		minNode(evilPos, convertedBoard, INT_MIN, INT_MAX, 0, 
+			i, moveCount);
+		gettimeofday(&endTime, 0);
+		if (elapsedTime(startTime, endTime) > maxTime_us)
+			break;
+	}
 	return evilPos;
 }
 

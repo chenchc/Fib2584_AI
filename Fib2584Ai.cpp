@@ -1,7 +1,7 @@
 #include "Fib2584Ai.h"
 
 Fib2584Ai::Fib2584Ai(const std::string &weight)
-:	td(false, false, weight), ab(3, td), moveCountForPlay(0), 
+:	td(false, false, weight), ab(10000, td), moveCountForPlay(0), 
 	moveCountForEvil(0)
 {}
 

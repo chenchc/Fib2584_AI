@@ -33,7 +33,7 @@ MoveDirection Fib2584Ai::AlphaBeta::generateMove(const int board[4][4],
 	int moveCount) const
 {
 	GameBoard convertedBoard(board);
-	MoveDirection dir;
+	MoveDirection dir = (MoveDirection)0;
 	timeval startTime, endTime;
 
 	gettimeofday(&startTime, 0);
@@ -52,7 +52,7 @@ int Fib2584Ai::AlphaBeta::generateEvilMove(const int board[4][4],
 	int moveCount) const
 {
 	GameBoard convertedBoard(board);
-	int evilPos;
+	int evilPos = 0;
 	timeval startTime, endTime;
 
 	gettimeofday(&startTime, 0);
@@ -89,13 +89,35 @@ int Fib2584Ai::AlphaBeta::maxNode(MoveDirection &dir, const GameBoard &board,
 	}
 	else {
 		int m = alpha;
+		// Try last dir first
+		MoveDirection oldDir = dir;
+		{
+			GameBoard nextBoard(board);
+			int reward = nextBoard.move(oldDir);
+			if (!(nextBoard == board)) {
+				int useless = 0;
+				int score = minNode(useless, nextBoard, m, beta, 
+					totalReward + reward, depth - 1, moveCount + 1);
+				if (score > m) {
+					dir = oldDir;
+					m = score;
+				}
+				if (m >= beta)
+					return m;
+			}
+		}
+
+		// Try other dir
 		for (int i = 0; i < 4; i++) {
+			if (i == oldDir)
+				continue;
+				
 			GameBoard nextBoard(board);
 			int reward = nextBoard.move((MoveDirection)i);
 			if (nextBoard == board)
 				continue;
 
-			int useless;
+			int useless = 0;
 			int score = minNode(useless, nextBoard, m, beta, 
 				totalReward + reward, depth - 1, moveCount + 1);
 			if (score > m) {
@@ -113,13 +135,35 @@ int Fib2584Ai::AlphaBeta::minNode(int &evilPos, const GameBoard &board,
 	int alpha, int beta, int totalReward, int depth, int moveCount) const
 {
 	int m = beta;
+
+	// Try old evilPos first
+	int oldEvilPos = evilPos;
+	{
+		GameBoard nextBoard(board);
+		bool canPutEvil = nextBoard.addRandomTile(oldEvilPos, moveCount);
+		if (canPutEvil) {
+			MoveDirection useless = (MoveDirection)0;
+			int score = maxNode(useless, nextBoard, alpha, m, totalReward, 
+				depth, moveCount);
+			if (score < m) {
+				evilPos = oldEvilPos;
+				m = score;
+			}
+			if (m <= alpha)
+				return m;
+		}
+	}
+
 	for (int i = 0; i < 16; i++) {
+		if (i == oldEvilPos)
+			continue;
+
 		GameBoard nextBoard(board);
 		bool canPutEvil = nextBoard.addRandomTile(i, moveCount);
 		if (!canPutEvil)
 			continue;
 
-		MoveDirection useless;
+		MoveDirection useless = (MoveDirection)0;
 		int score = maxNode(useless, nextBoard, alpha, m, totalReward, 
 			depth, moveCount);
 		if (score < m) {

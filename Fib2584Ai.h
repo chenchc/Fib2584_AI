@@ -70,6 +70,7 @@ private:
 		int countNonMergeableTile(MoveDirection dir, int row, int col) const;
 	};
 
+public:
 	class TDLearning
 	{
 	public:

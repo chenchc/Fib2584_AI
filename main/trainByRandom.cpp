@@ -27,8 +27,8 @@ int main(int argc, char* argv[])
 	srand(time(NULL));
 	int iPlayRounds = atoi(argv[1]);
 	// create and initialize AI
-	Fib2584Ai ai(false);
-	ai.initialize(argc, argv);
+	Fib2584Ai::TDLearningNew ai(true, false);
+	//ai.initialize(argc, argv);
 
 	// initialize statistic data
 	Statistic statistic;
@@ -53,8 +53,7 @@ int main(int argc, char* argv[])
 		
 		while(!gameBoard.terminated()) {
 			gameBoard.getArrayBoard(arrayBoard);
-			MoveDirection moveDirection = ai.generateMove(arrayBoard, 
-				moveIndex);
+			MoveDirection moveDirection = ai(arrayBoard);
 
 			GameBoard originalBoard = gameBoard;
 			iScore += gameBoard.move(moveDirection);
@@ -70,7 +69,7 @@ int main(int argc, char* argv[])
 				moveIndex);
 		}
 		gameBoard.getArrayBoard(arrayBoard);
-		ai.gameOver(arrayBoard, iScore);
+		ai.gameover(arrayBoard);
 		statistic.increaseOneGame();
 
 		// update statistic data

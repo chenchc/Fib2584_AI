@@ -1,27 +1,21 @@
 #include "Fib2584Ai.h"
 #include <climits>
 #include <cmath>
+#include <functional>
 #include <sys/time.h>
 
 Fib2584Ai::AlphaBeta::AlphaBeta(int maxTime_us, const TDLearningNew &td)
 :	maxTime_us(maxTime_us), td(td)
-{}
-/*
-int Fib2584Ai::AlphaBeta::getNewDepth(GameBoard &board) const
 {
-	int emptyTile = board.countEmptyTile();
-	int newDepth;
-
-	if (emptyTile <= 5)
-		newDepth = depth * log(12.0) / log(5.0);
-	else if (emptyTile >= 12)
-		newDepth = depth;
-	else
-		newDepth = depth * log(12.0) / log(emptyTile);
-
-	return newDepth;
+	maxNodeTT = new MoveDirection [TT_SIZE]();
+	minNodeTT = new int [TT_SIZE]();
 }
-*/
+
+Fib2584Ai::AlphaBeta::~AlphaBeta()
+{
+	delete [] maxNodeTT;
+	delete [] minNodeTT;
+}
 
 inline int elapsedTime(const timeval &startTime, const timeval &endTime)
 {
@@ -37,7 +31,7 @@ MoveDirection Fib2584Ai::AlphaBeta::generateMove(const int board[4][4],
 	timeval startTime, endTime;
 
 	gettimeofday(&startTime, 0);
-	for (int i = 0; i < 32; i++) {
+	for (int i = 0; ; i++) {
 		maxNode(dir, convertedBoard, INT_MIN, INT_MAX, 0, 
 			i, moveCount);
 		gettimeofday(&endTime, 0);
@@ -56,7 +50,7 @@ int Fib2584Ai::AlphaBeta::generateEvilMove(const int board[4][4],
 	timeval startTime, endTime;
 
 	gettimeofday(&startTime, 0);
-	for (int i = 0; i < 32; i++) {
+	for (int i = 0; ; i++) {
 		minNode(evilPos, convertedBoard, INT_MIN, INT_MAX, 0, 
 			i, moveCount);
 		gettimeofday(&endTime, 0);
@@ -66,9 +60,11 @@ int Fib2584Ai::AlphaBeta::generateEvilMove(const int board[4][4],
 	return evilPos;
 }
 
-int Fib2584Ai::AlphaBeta::maxNode(MoveDirection &dir, const GameBoard &board, 
+int Fib2584Ai::AlphaBeta::maxNode(MoveDirection &dir, GameBoard &board, 
 	int alpha, int beta, int totalReward, int depth, int moveCount) const
 {
+	int hashBoard = getHashBoard(board);
+
 	if (depth == 0) {
 		int m = alpha;
 		bool canMove = false;
@@ -85,10 +81,13 @@ int Fib2584Ai::AlphaBeta::maxNode(MoveDirection &dir, const GameBoard &board,
 				dir = (MoveDirection)i;
 				m = score;
 			}
-			if (m >= beta)
+			if (m >= beta) {
+				maxNodeTT[hashBoard] = (MoveDirection)i;
 				return m;
+			}
 		}
 			
+		maxNodeTT[hashBoard] = dir;
 		return canMove ? m : INT_MIN + totalReward;
 	}
 	else {
@@ -96,7 +95,7 @@ int Fib2584Ai::AlphaBeta::maxNode(MoveDirection &dir, const GameBoard &board,
 		bool canMove = false;
 
 		// Try last dir first
-		MoveDirection oldDir = dir;
+		MoveDirection oldDir = maxNodeTT[hashBoard];
 		{
 			GameBoard nextBoard(board);
 			int reward = nextBoard.move(oldDir);
@@ -133,21 +132,25 @@ int Fib2584Ai::AlphaBeta::maxNode(MoveDirection &dir, const GameBoard &board,
 				dir = (MoveDirection)i;
 				m = score;
 			}
-			if (m >= beta)
+			if (m >= beta) {
+				maxNodeTT[hashBoard] = (MoveDirection)i;
 				return m;
+			}
 		}
 
+		maxNodeTT[hashBoard] = dir;
 		return canMove ? m : INT_MIN + totalReward;
 	}
 }
 
-int Fib2584Ai::AlphaBeta::minNode(int &evilPos, const GameBoard &board, 
+int Fib2584Ai::AlphaBeta::minNode(int &evilPos, GameBoard &board, 
 	int alpha, int beta, int totalReward, int depth, int moveCount) const
 {
 	int m = beta;
+	int hashBoard = getHashBoard(board);
 
 	// Try old evilPos first
-	int oldEvilPos = evilPos;
+	int oldEvilPos = minNodeTT[hashBoard];
 	{
 		GameBoard nextBoard(board);
 		bool canPutEvil = nextBoard.addRandomTile(oldEvilPos, moveCount);
@@ -180,8 +183,25 @@ int Fib2584Ai::AlphaBeta::minNode(int &evilPos, const GameBoard &board,
 			evilPos = i;
 			m = score;
 		}
-		if (m <= alpha)
+		if (m <= alpha) {
+			minNodeTT[hashBoard] = i;
 			return m;
+		}
 	}
+
+	minNodeTT[hashBoard] = evilPos;
 	return m;
+}
+
+int Fib2584Ai::AlphaBeta::getHashBoard(GameBoard &board) const
+{
+	size_t result = 0;
+	std::hash<int> hash_int;
+
+	result ^= hash_int((int)board.getRow(0));
+	result ^= hash_int((int)board.getRow(1));
+	result ^= hash_int((int)board.getRow(2));
+	result ^= hash_int((int)board.getRow(3));
+
+	return result % TT_SIZE;
 }

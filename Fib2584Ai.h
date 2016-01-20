@@ -150,17 +150,22 @@ private:
 	class AlphaBeta {
 	public:
 		AlphaBeta(int maxTime_us, const TDLearningNew &td);
+		~AlphaBeta();
 		MoveDirection generateMove(const int board[4][4], int moveCount) const;
 		int generateEvilMove(const int board[4][4], int moveCount) const;
 	private:
+		const int TT_SIZE = 1024 * 1024;
+
 		int maxTime_us;
 		const TDLearningNew &td;
+		MoveDirection *maxNodeTT;
+		int *minNodeTT;
 
-		int maxNode(MoveDirection &dir, const GameBoard &board, int alpha, 
+		int maxNode(MoveDirection &dir, GameBoard &board, int alpha, 
 			int beta, int totalReward, int depth, int moveCount) const;
-		int minNode(int &evilPos, const GameBoard &board, int alpha, 
+		int minNode(int &evilPos, GameBoard &board, int alpha, 
 			int beta, int totalReward, int depth, int moveCount) const;
-		int getNewDepth(GameBoard &board) const;
+		int getHashBoard(GameBoard &board) const;
 	};
 
 	TDLearningNew td;

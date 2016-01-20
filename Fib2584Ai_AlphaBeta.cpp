@@ -71,12 +71,15 @@ int Fib2584Ai::AlphaBeta::maxNode(MoveDirection &dir, const GameBoard &board,
 {
 	if (depth == 0) {
 		int m = alpha;
+		bool canMove = false;
+
 		for (int i = 0; i < 4; i++) {
 			GameBoard nextBoard(board);
 			int reward = nextBoard.move((MoveDirection)i);
 			if (nextBoard == board)
 				continue;
-
+			canMove = true;
+		
 			int score = totalReward + reward + td.evaluateBoard(nextBoard);
 			if (score > m) {
 				dir = (MoveDirection)i;
@@ -85,16 +88,21 @@ int Fib2584Ai::AlphaBeta::maxNode(MoveDirection &dir, const GameBoard &board,
 			if (m >= beta)
 				return m;
 		}
-		return m;
+			
+		return canMove ? m : INT_MIN + totalReward;
 	}
 	else {
 		int m = alpha;
+		bool canMove = false;
+
 		// Try last dir first
 		MoveDirection oldDir = dir;
 		{
 			GameBoard nextBoard(board);
 			int reward = nextBoard.move(oldDir);
 			if (!(nextBoard == board)) {
+				canMove = true;
+
 				int useless = 0;
 				int score = minNode(useless, nextBoard, m, beta, 
 					totalReward + reward, depth - 1, moveCount + 1);
@@ -116,6 +124,7 @@ int Fib2584Ai::AlphaBeta::maxNode(MoveDirection &dir, const GameBoard &board,
 			int reward = nextBoard.move((MoveDirection)i);
 			if (nextBoard == board)
 				continue;
+			canMove = true;
 
 			int useless = 0;
 			int score = minNode(useless, nextBoard, m, beta, 
@@ -127,7 +136,8 @@ int Fib2584Ai::AlphaBeta::maxNode(MoveDirection &dir, const GameBoard &board,
 			if (m >= beta)
 				return m;
 		}
-		return m;
+
+		return canMove ? m : INT_MIN + totalReward;
 	}
 }
 
